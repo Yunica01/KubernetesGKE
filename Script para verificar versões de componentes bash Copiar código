@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Listar clusters e verificar a versão do Kubernetes
+echo "Verificando versões do Kubernetes nos clusters..."
+gcloud container clusters list --format="table(name,location,masterVersion,currentNodeVersion)"
