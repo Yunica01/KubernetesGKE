@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Verificar se o PodSecurityPolicy está habilitado
+echo "Verificando PodSecurityPolicy nos clusters..."
+for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
+    echo "Cluster: $CLUSTER"
+    gcloud container clusters describe $CLUSTER --format="value(enablePodSecurityPolicy)" | grep "true" || echo "PodSecurityPolicy não está habilitado no cluster $CLUSTER"
+done
