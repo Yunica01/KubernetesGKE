@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Listar clusters disponíveis
+echo "Listando clusters disponíveis..."
+gcloud container clusters list
+
+# Verificar autenticação RBAC está ativada
+echo "Verificando se RBAC está habilitado em cada cluster..."
+for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
+    echo "Cluster: $CLUSTER"
+    gcloud container clusters describe $CLUSTER --format="value(masterAuth.clientCertificateConfig)" | grep "enabled: true" || echo "RBAC não está habilitado no cluster $CLUSTER"
+done
