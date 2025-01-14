@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Verificar se os logs de auditoria estão habilitados em cada cluster
+echo "Verificando logs de auditoria no Kubernetes..."
+for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
+    echo "Cluster: $CLUSTER"
+    gcloud container clusters describe $CLUSTER --format="value(loggingService)" | grep "logging.googleapis.com/kubernetes" || echo "Logs de auditoria não habilitados no cluster $CLUSTER"
+done
