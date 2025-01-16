@@ -2,11 +2,23 @@
 
 # Listar clusters disponíveis
 echo "Listando clusters disponíveis..."
-gcloud container clusters list
+gcloud container clusters list --format="table(name,location,masterAuth.clientCertificateConfig)"
 
-# Verificar autenticação RBAC está ativada
+# Verificar autenticação RBAC
 echo "Verificando se RBAC está habilitado em cada cluster..."
-for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
-    echo "Cluster: $CLUSTER"
-    gcloud container clusters describe $CLUSTER --format="value(masterAuth.clientCertificateConfig)" | grep "enabled: true" || echo "RBAC não está habilitado no cluster $CLUSTER"
+for CLUSTER_INFO in $(gcloud container clusters list --format="value(name,location)"); do
+    # Extrair nome e localização do cluster
+    CLUSTER=$(echo "$CLUSTER_INFO" | awk '{print $1}')
+    LOCATION=$(echo "$CLUSTER_INFO" | awk '{print $2}')
+    
+    echo "Cluster: $CLUSTER (Location: $LOCATION)"
+    
+    # Verificar configuração de RBAC
+    RBAC_CONFIG=$(gcloud container clusters describe "$CLUSTER" --location "$LOCATION" --format="value(masterAuth.clientCertificateConfig.issueClientCertificate)")
+    
+    if [[ "$RBAC_CONFIG" == "true" ]]; then
+        echo " -> RBAC está habilitado no cluster $CLUSTER."
+    else
+        echo " -> Atenção: RBAC NÃO está habilitado no cluster $CLUSTER."
+    fi
 done
