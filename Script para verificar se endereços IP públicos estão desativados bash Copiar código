@@ -2,7 +2,19 @@
 
 # Verificar se o master do cluster usa IP privado
 echo "Verificando se os clusters usam endereços IP privados..."
-for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
-    echo "Cluster: $CLUSTER"
-    gcloud container clusters describe $CLUSTER --format="value(privateClusterConfig.enablePrivateEndpoint)" | grep "true" || echo "Cluster $CLUSTER não está configurado como privado"
+for CLUSTER_INFO in $(gcloud container clusters list --format="value(name,location)"); do
+    # Extrair nome e localização do cluster
+    CLUSTER=$(echo "$CLUSTER_INFO" | awk '{print $1}')
+    LOCATION=$(echo "$CLUSTER_INFO" | awk '{print $2}')
+    
+    echo "Cluster: $CLUSTER (Location: $LOCATION)"
+    
+    # Verificar configuração de IP privado
+    PRIVATE_ENDPOINT=$(gcloud container clusters describe "$CLUSTER" --location "$LOCATION" --format="value(privateClusterConfig.enablePrivateEndpoint)")
+    
+    if [[ "$PRIVATE_ENDPOINT" == "true" ]]; then
+        echo " -> O cluster $CLUSTER está configurado para usar IP privado."
+    else
+        echo " -> Atenção: O cluster $CLUSTER NÃO está configurado como privado."
+    fi
 done
