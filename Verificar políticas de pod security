@@ -14,3 +14,4 @@ gcloud container clusters list --format="value(name,location,privateClusterConfi
     log "Detalhando o cluster $CLUSTER na localização $LOCATION..."
     gcloud container clusters describe "$CLUSTER" --location "$LOCATION" --format="json" || log "Erro ao descrever o cluster $CLUSTER."
 done
+ 
