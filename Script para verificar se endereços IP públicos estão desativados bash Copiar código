@@ -18,3 +18,4 @@ for CLUSTER_INFO in $(gcloud container clusters list --format="value(name,locati
         echo " -> Atenção: O cluster $CLUSTER NÃO está configurado como privado."
     fi
 done
+
