@@ -1,5 +1,25 @@
 #!/bin/bash
 
-# Listar clusters e verificar a versão do Kubernetes
+# Verificar a versão do Kubernetes nos clusters
 echo "Verificando versões do Kubernetes nos clusters..."
-gcloud container clusters list --format="table(name,location,masterVersion,currentNodeVersion)"
+echo "-------------------------------------------------"
+
+# Listar clusters com detalhes de versão
+gcloud container clusters list --format="value(name,location,masterVersion,currentNodeVersion)" | while read CLUSTER_INFO; do
+    # Extrair detalhes do cluster
+    CLUSTER=$(echo "$CLUSTER_INFO" | awk '{print $1}')
+    LOCATION=$(echo "$CLUSTER_INFO" | awk '{print $2}')
+    MASTER_VERSION=$(echo "$CLUSTER_INFO" | awk '{print $3}')
+    NODE_VERSION=$(echo "$CLUSTER_INFO" | awk '{print $4}')
+    
+    echo "Cluster: $CLUSTER (Location: $LOCATION)"
+    echo " - Master Version: $MASTER_VERSION"
+    echo " - Node Version: $NODE_VERSION"
+    
+    # Comparar as versões do master e dos nós
+    if [[ "$MASTER_VERSION" != "$NODE_VERSION" ]]; then
+        echo " -> Atenção: As versões do master e dos nós estão diferentes!"
+    fi
+    
+    echo "-------------------------------------------------"
+done
