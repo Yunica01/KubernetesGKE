@@ -2,7 +2,19 @@
 
 # Verificar se Workload Identity está habilitado
 echo "Verificando Workload Identity nos clusters..."
-for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
-    echo "Cluster: $CLUSTER"
-    gcloud container clusters describe $CLUSTER --format="value(workloadIdentityConfig.workloadPool)" || echo "Workload Identity não configurado no cluster $CLUSTER"
+for CLUSTER_INFO in $(gcloud container clusters list --format="value(name,location)"); do
+    # Extrair o nome e a localização do cluster
+    CLUSTER=$(echo "$CLUSTER_INFO" | awk '{print $1}')
+    LOCATION=$(echo "$CLUSTER_INFO" | awk '{print $2}')
+    
+    echo "Cluster: $CLUSTER (Location: $LOCATION)"
+    
+    # Verificar Workload Identity
+    WORKLOAD_POOL=$(gcloud container clusters describe "$CLUSTER" --location "$LOCATION" --format="value(workloadIdentityConfig.workloadPool)")
+    
+    if [[ -z "$WORKLOAD_POOL" ]]; then
+        echo "Workload Identity não configurado no cluster $CLUSTER"
+    else
+        echo "Workload Identity configurado: $WORKLOAD_POOL"
+    fi
 done
