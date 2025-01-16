@@ -1,8 +1,16 @@
 #!/bin/bash
 
-# Verificar se o PodSecurityPolicy está habilitado
-echo "Verificando PodSecurityPolicy nos clusters..."
-for CLUSTER in $(gcloud container clusters list --format="value(name)"); do
-    echo "Cluster: $CLUSTER"
-    gcloud container clusters describe $CLUSTER --format="value(enablePodSecurityPolicy)" | grep "true" || echo "PodSecurityPolicy não está habilitado no cluster $CLUSTER"
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
+# Verificar clusters privados e configurações
+log "Verificando clusters privados no Kubernetes..."
+gcloud container clusters list --format="value(name,location,privateClusterConfig.enablePrivateEndpoint)" | while read CLUSTER LOCATION PRIVATE_ENDPOINT; do
+    if [[ "$PRIVATE_ENDPOINT" == "False" ]]; then
+        log "Cluster $CLUSTER na localização $LOCATION não está configurado como privado."
+    fi
+    # Descrição do cluster com localização
+    log "Detalhando o cluster $CLUSTER na localização $LOCATION..."
+    gcloud container clusters describe "$CLUSTER" --location "$LOCATION" --format="json" || log "Erro ao descrever o cluster $CLUSTER."
 done
